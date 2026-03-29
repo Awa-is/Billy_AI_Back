@@ -1,0 +1,95 @@
+services:
+  - type: web
+    name: billy-ai-backend
+    env: python
+    buildCommand: "pip install -r requirements.txt && python run_migrations.py"
+    startCommand: "chmod +x start.sh && ./start.sh"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: FLASK_APP
+        value: wsgi.py
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: billy-ai-db
+          property: connectionString
+      # Redis must be created manually first, then these will auto-link
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: billy-ai-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: billy-ai-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: billy-ai-redis
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FLASK_ENV
+        value: production
+      - key: APIFY_API_TOKEN
+        sync: false  # Set this manually in Render dashboard
+      - key: APIFY_PROFILE_ACTOR_ID
+        sync: false  # Set this manually in Render dashboard if needed
+      - key: CLAUDE_API_KEY
+        sync: false  # Set this manually in Render dashboard
+
+  - type: worker
+    name: billy-ai-celery-worker
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "celery -A celery_worker worker --loglevel=info --pool=solo"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: billy-ai-db
+          property: connectionString
+      # Redis must be created manually first, then these will auto-link
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: billy-ai-redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: billy-ai-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: billy-ai-redis
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FLASK_ENV
+        value: production
+      - key: APIFY_API_TOKEN
+        sync: false  # Set this manually in Render dashboard
+      - key: APIFY_PROFILE_ACTOR_ID
+        sync: false  # Set this manually in Render dashboard if needed
+      - key: CLAUDE_API_KEY
+        sync: false  # Set this manually in Render dashboard
+
+databases:
+  - name: billy-ai-db
+    databaseName: billy_ai
+    user: billy_admin
+
+# Note: Redis services cannot be created via Blueprint YAML
+# You need to manually create a Redis service named "billy-ai-redis" in Render dashboard
+# Then link it to the services via environment variables

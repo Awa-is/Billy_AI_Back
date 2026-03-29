@@ -1,0 +1,217 @@
+{
+    "info": {
+        "name": "Billy AI - Current Features",
+        "description": "Collection of currently implemented and integrated endpoints for Billy AI.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "1. Authentication",
+            "description": "Endpoints for user authentication and account management.",
+            "item": [
+                {
+                    "name": "Login",
+                    "description": "Authenticates a user and returns a JWT access token. The test script automatically saves this token to the 'billy_token' environment variable for subsequent requests.",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.access_token) {",
+                                    "    pm.environment.set(\"billy_token\", jsonData.access_token);",
+                                    "    pm.globals.set(\"billy_token\", jsonData.access_token);",
+                                    "    console.log(\"Token saved to environment and globals\");",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Register",
+                    "description": "Creates a new user account with the specified email, password, and company details.",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"newuser@example.com\",\n    \"password\": \"password123\",\n    \"full_name\": \"New User\",\n    \"company_name\": \"My Company\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/auth/register",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "register"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Current User (Me)",
+                    "description": "Retrieves the profile information of the currently authenticated user. Useful for verifying the validity of the token.",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/auth/me",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "me"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "2. Leads & Pipeline",
+            "description": "Endpoints for managing leads, uploads, and viewing pipeline progress.",
+            "item": [
+                {
+                    "name": "Bulk Upload Leads",
+                    "description": "Uploads a CSV file containing leads (must have 'linkedin_url' and 'email' columns). Initiates an asynchronous background job to scrape profiles, create companies, and analyze posts. \n\nNote: If a profile already exists but has no data (url_only), it will be re-queued for processing.",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "description": "Select a CSV file with columns: linkedin_url, email"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/profiles/bulk-upload-leads",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "profiles",
+                                "bulk-upload-leads"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Upload Template",
+                    "description": "Downloads a pre-formatted CSV template file to help users structure their lead lists correctly for upload. Contains headers: linkedin_url, email, name, notes.",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/profiles/bulk-upload-leads/template",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "profiles",
+                                "bulk-upload-leads",
+                                "template"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Pipeline Stats",
+                    "description": "Retrieves real-time statistics of the lead processing pipeline, including counts for profiles (scraped/failed), companies, and analyzed posts. Powered by the 'Stats' service.",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/pipeline/stats",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pipeline",
+                                "stats"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{billy_token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    ""
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://127.0.0.1:5000/api",
+            "type": "string"
+        }
+    ]
+}
